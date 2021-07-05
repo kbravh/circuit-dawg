@@ -27,8 +27,14 @@ class Dictionary(object):
 
     def read(self, fp):
         "Reads a dictionary from an input stream."
-        base_size = struct.unpack(str("=I"), fp.read(4))[0]
-        self._units.fromfile(fp, base_size)
+        self._units = array.array(str("I"))
+        while True:
+            bytes = fp.read(4)
+            if not bytes:
+                break
+            point = struct.unpack(str("I"), bytes)[0]
+            self._units.append(point)
+        self._units.pop(0)
 
     def contains(self, key):
         "Exact matching."
