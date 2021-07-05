@@ -3,7 +3,6 @@
 """
 Script for building test DAWGs.
 """
-from __future__ import absolute_import, unicode_literals
 import dawg
 import os
 import sys

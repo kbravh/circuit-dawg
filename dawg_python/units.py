@@ -2,7 +2,6 @@
 """
 Unit of a dictionary
 """
-from __future__ import absolute_import
 
 PRECISION_MASK = 0xFFFFFFFF
 
