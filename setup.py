@@ -2,14 +2,14 @@
 from setuptools import setup
 
 setup(
-    name="DAWG-Python",
-    version="0.7.2",
-    description="Pure-python reader for DAWGs (DAFSAs) created by dawgdic C++ library or DAWG Python extension.",
-    long_description = open('README.rst').read() + "\n\n"+ open('CHANGES.rst').read(),
-    author='Mikhail Korobov',
-    author_email='kmike84@gmail.com',
-    url='https://github.com/kmike/DAWG-Python/',
-    packages = ['dawg_python'],
+    name="circuit-dawg",
+    version="1.0.0",
+    description="Pure-python reader for DAWGs (DAFSAs) that were created by dawgdic C++ library or the DAWG Python library                . Optimized to run on CircuitPython.",
+    long_description = open('README.md').read(),
+    author='Karey Higuera',
+    author_email='karey.higuera@gmail.com',
+    url='https://github.com/kbravh/circuit-dawg/',
+    packages = ['circuit-dawg'],
 
     classifiers=[
         'Development Status :: 4 - Beta',

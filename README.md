@@ -1,35 +1,22 @@
-DAWG-Python
-===========
-
-.. image:: https://travis-ci.org/kmike/DAWG-Python.png?branch=master
-    :target: https://travis-ci.org/kmike/DAWG-Python
-.. image:: https://coveralls.io/repos/kmike/DAWG-Python/badge.png?branch=master
-    :target: https://coveralls.io/r/kmike/DAWG-Python
-
+# DAWG-Python
 
 This pure-python package provides read-only access for files
-created by `dawgdic`_ C++ library and `DAWG`_ python package.
-
-.. _dawgdic: https://code.google.com/p/dawgdic/
-.. _DAWG: https://github.com/kmike/DAWG
+created by [`dawgdic`](https://code.google.com/p/dawgdic/) C++ library and [`DAWG`](https://github.com/kmike/DAWG) python package.
 
 This package is not capable of creating DAWGs. It works with DAWGs built by
-`dawgdic`_ C++ library or `DAWG`_ Python extension module. The main purpose
+[`dawgdic`](https://code.google.com/p/dawgdic/) C++ library or [`DAWG`](https://github.com/kmike/DAWG) Python extension module. The main purpose
 of DAWG-Python is to provide an access to DAWGs without requiring compiled
 extensions. It is also quite fast under PyPy (see benchmarks).
 
-Installation
-============
+## Installation
 
 pip install DAWG-Python
 
-Usage
-=====
+## Usage
 
-The aim of DAWG-Python is to be API- and binary-compatible
-with `DAWG`_ when it is possible.
+The aim of `circuit-dawg` is to be API- and binary-compatible with [`DAWG`](https://github.com/kmike/DAWG) when it is possible.
 
-First, you have to create a dawg using DAWG_ module::
+First, you have to create a dawg using [`DAWG`](https://github.com/kmike/DAWG) module::
 
     import dawg
     d = dawg.DAWG(data)
@@ -40,12 +27,11 @@ And then this dawg can be loaded without requiring C extensions::
     import dawg_python
     d = dawg_python.DAWG().load('words.dawg')
 
-Please consult `DAWG`_ docs for detailed usage. Some features
-(like constructor parameters or ``save`` method) are intentionally
+Please consult [`DAWG`](https://github.com/kmike/DAWG) docs for detailed usage. Some features
+(like constructor parameters or `save()` method) are intentionally
 unsupported.
 
-Benchmarks
-==========
+## Benchmarks
 
 Benchmark results (100k unicode words, integer values (lenghts of the words),
 PyPy 1.9, macbook air i5 1.8 Ghz)::
@@ -94,57 +80,49 @@ PyPy 1.9, macbook air i5 1.8 Ghz)::
     RecordDAWG.keys(prefix="xxx"), NON_EXISTING:            2450.898K ops/sec
 
 Under CPython expect it to be about 50x slower.
-Memory consumption of DAWG-Python should be the same as of `DAWG`_.
+Memory consumption of DAWG-Python should be the same as of [`DAWG`](https://github.com/kmike/DAWG).
 
-.. _marisa-trie: https://github.com/kmike/marisa-trie
+## Current limitations
 
-Current limitations
-===================
-
-* This package is not capable of creating DAWGs;
-* all the limitations of `DAWG`_ apply.
+* This package is not capable of creating DAWGs
+* all the limitations of [`DAWG`](https://github.com/kmike/DAWG) apply
 
 Contributions are welcome!
 
 
-Contributing
-============
+## Contributing
 
-Development happens at github: https://github.com/kmike/DAWG-Python
-Issue tracker: https://github.com/kmike/DAWG-Python/issues
+Check out the [source code](https://github.com/kbravh/circuit-dawg)
+Submit an [issue or suggestion](https://github.com/kbravh/circuit-dawg/issues)
 
 Feel free to submit ideas, bugs or pull requests.
 
-Running tests and benchmarks
-----------------------------
+### Running tests and benchmarks
 
-Make sure `tox`_ is installed and run
+Make sure [`tox`](http://tox.testrun.org) is installed and run
 
-::
+```bash
+tox
+```
 
-    $ tox
-
-from the source checkout. Tests should pass under python 2.6, 2.7, 3.2, 3.3,
-3.4 and PyPy >= 1.9.
+from the source checkout. Tests should pass under python 2.6, 2.7, 3.2, 3.3, 3.4 and PyPy >= 1.9.
 
 In order to run benchmarks, type
 
-::
-
-    $ tox -c bench.ini -e pypy
+```bash
+tox -c bench.ini -e pypy
+```
 
 This runs benchmarks under PyPy (they are about 50x slower under CPython).
 
-.. _tox: http://tox.testrun.org
+# Authors & Contributors
 
-Authors & Contributors
-----------------------
+- [kbravh](https://github.com/kbravh) <karey.higuera@gmail.com>
 
-* Mikhail Korobov <kmike84@gmail.com>
+Forked from [DAWG-Python](https://github.com/kmike/DAWG-Python) by Mikhail Korobov <kmike84@gmail.com>
 
-The algorithms are from `dawgdic`_ C++ library by Susumu Yata & contributors.
+The algorithms are from [`dawgdic`](https://code.google.com/p/dawgdic/) C++ library by Susumu Yata & contributors.
 
-License
-=======
+# License
 
 This package is licensed under MIT License.
