@@ -1,11 +1,6 @@
 language: python
 python:
-  - "3.4"
-  - "3.3"
-  - "3.2"
-  - "2.7"
-  - "2.6"
-  - "pypy"
+  - "3.6"
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install dawg; fi
@@ -14,7 +9,7 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - py.test --cov=dawg_python
+  - py.test --cov=circuit_dawg
 
 after_success:
   - coveralls

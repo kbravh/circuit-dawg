@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import struct
 from binascii import a2b_base64
 

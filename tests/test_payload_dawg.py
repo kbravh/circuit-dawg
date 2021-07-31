@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import pytest
-import dawg_python
+import circuit_dawg
 from .utils import data_path
 
 class TestBytesDAWG(object):
@@ -15,7 +12,7 @@ class TestBytesDAWG(object):
     )
 
     def dawg(self):
-        return dawg_python.BytesDAWG().load(data_path("small", "bytes.dawg"))
+        return circuit_dawg.BytesDAWG().load(data_path("small", "bytes.dawg"))
 
     def test_contains(self):
         d = self.dawg()
@@ -94,7 +91,7 @@ class TestRecordDAWG(object):
 
     def dawg(self):
         path = data_path("small", "record.dawg")
-        return dawg_python.RecordDAWG(">3H").load(path)
+        return circuit_dawg.RecordDAWG(">3H").load(path)
 
     def test_getitem(self):
         d = self.dawg()

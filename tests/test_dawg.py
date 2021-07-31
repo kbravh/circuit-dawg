@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 import pickle
 import tempfile
 
 import pytest
-import dawg_python
+import circuit_dawg
 
 from .utils import data_path
 
@@ -12,7 +10,7 @@ def test_c_dawg_contains():
     dawg = pytest.importorskip("dawg")  # import dawg
     bin_dawg = dawg.IntDAWG({'foo': 1, 'bar': 2, 'foobar': 3})
 
-    d = dawg_python.Dictionary()
+    d = circuit_dawg.Dictionary()
 
     fd, path = tempfile.mkstemp()
     bin_dawg.save(path)
@@ -30,7 +28,7 @@ class TestCompletionDAWG(object):
     keys = ['f', 'bar', 'foo', 'foobar']
 
     def dawg(self):
-        return dawg_python.CompletionDAWG().load(data_path('small', 'completion.dawg'))
+        return circuit_dawg.CompletionDAWG().load(data_path('small', 'completion.dawg'))
 
     def test_contains(self):
         d = self.dawg()
@@ -67,7 +65,7 @@ class TestCompletionDAWG(object):
             d.load(path)
 
     def test_empty_dawg(self):
-        d = dawg_python.CompletionDAWG().load(data_path('small', 'completion-empty.dawg'))
+        d = circuit_dawg.CompletionDAWG().load(data_path('small', 'completion-empty.dawg'))
         assert d.keys() == []
 
     def test_prefixes(self):
@@ -82,7 +80,7 @@ class TestIntDAWG(object):
     payload = {'foo': 1, 'bar': 5, 'foobar': 3}
 
     def dawg(self):
-        return dawg_python.IntDAWG().load(data_path('small', 'int_dawg.dawg'))
+        return circuit_dawg.IntDAWG().load(data_path('small', 'int_dawg.dawg'))
 
     def test_getitem(self):
         d = self.dawg()
@@ -105,7 +103,7 @@ class TestIntDAWG(object):
 
 class TestIntCompletionDawg(TestIntDAWG):
     def dawg(self):
-        return dawg_python.IntCompletionDAWG().load(data_path('small', 'int_completion_dawg.dawg'))
+        return circuit_dawg.IntCompletionDAWG().load(data_path('small', 'int_completion_dawg.dawg'))
 
     def test_completion_keys(self):
         assert self.dawg().keys() == sorted(self.payload.keys())

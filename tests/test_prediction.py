@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 import pytest
-import dawg_python
+import circuit_dawg
 
 from .utils import data_path
 
 class TestPrediction(object):
 
-    REPLACES = dawg_python.DAWG.compile_replaces({'Е': 'Ё'})
+    REPLACES = circuit_dawg.DAWG.compile_replaces({'Е': 'Ё'})
 
     DATA = ['ЁЖИК', 'ЁЖИКЕ', 'ЁЖ', 'ДЕРЕВНЯ', 'ДЕРЁВНЯ', 'ЕМ', 'ОЗЕРА', 'ОЗЁРА', 'ОЗЕРО']
     SUITE = [
@@ -45,13 +43,13 @@ class TestPrediction(object):
 
     def record_dawg(self):
         path = data_path("small", "prediction-record.dawg")
-        return dawg_python.RecordDAWG(str("=H")).load(path)
+        return circuit_dawg.RecordDAWG(str("=H")).load(path)
 
 
 
     @pytest.mark.parametrize(("word", "prediction"), SUITE)
     def test_dawg_prediction(self, word, prediction):
-        d = dawg_python.DAWG().load(data_path("small", "prediction.dawg"))
+        d = circuit_dawg.DAWG().load(data_path("small", "prediction.dawg"))
         assert d.similar_keys(word, self.REPLACES) == prediction
 
     @pytest.mark.parametrize(("word", "prediction"), SUITE)

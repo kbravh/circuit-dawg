@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals, division
 import os
 import sys
 import random
 import string
 import timeit
 
-import dawg_python
+import circuit_dawg
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
@@ -59,16 +57,16 @@ def bench(name, timer, descr='M ops/sec', op_count=0.1, repeats=3, runs=5):
         #print(e)
 
 def load_dawg():
-    return dawg_python.DAWG().load(data_path('large', 'dawg.dawg'))
+    return circuit_dawg.DAWG().load(data_path('large', 'dawg.dawg'))
 
 def load_bytes_dawg():
-    return dawg_python.BytesDAWG().load(data_path('large', 'bytes_dawg.dawg'))
+    return circuit_dawg.BytesDAWG().load(data_path('large', 'bytes_dawg.dawg'))
 
 def load_record_dawg():
-    return dawg_python.RecordDAWG(str('<H')).load(data_path('large', 'record_dawg.dawg'))
+    return circuit_dawg.RecordDAWG(str('<H')).load(data_path('large', 'record_dawg.dawg'))
 
 def load_int_dawg():
-    return dawg_python.IntDAWG().load(data_path('large', 'int_dawg.dawg'))
+    return circuit_dawg.IntDAWG().load(data_path('large', 'int_dawg.dawg'))
 
 def benchmark():
     print('\n====== Benchmarks (100k unique unicode words) =======\n')
