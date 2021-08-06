@@ -7,7 +7,7 @@ This package is not capable of creating DAWGs. It works with DAWGs built by the 
 
 ## Installation
 
-Clone this repository.
+Clone this repository (pip will come soon!)
 
 ## Usage
 
