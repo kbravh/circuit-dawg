@@ -1,6 +1,6 @@
 build/
 dist/
-circuit-dawg.egg-info/
+circuit_dawg.egg-info/
 
 ^stuff/
 *.pyc
