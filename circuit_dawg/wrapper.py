@@ -28,6 +28,7 @@ class Dictionary(object):
         "Reads a dictionary from an input stream."
         self._units = array.array("I")
         base_size = fp.read(4)
+        # struct.iter_unpack() is not available in CircuitPython
         while True:
             bytes = fp.read(4)
             if not bytes:

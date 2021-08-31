@@ -12,7 +12,7 @@ class DAWG(object):
 
     def __contains__(self, key):
         if not isinstance(key, bytes):
-            key = key.encode('utf8')
+            key = key.encode()
         return self.dct.contains(key)
 
     def load(self, path):

@@ -6,3 +6,5 @@ circuit_dawg.egg-info/
 *.pyc
 .tox/
 *.orig
+.pytest*
+__pycache__
