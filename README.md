@@ -7,7 +7,11 @@ This package is not capable of creating DAWGs. It works with DAWGs built by the 
 
 ## Installation
 
-Clone this repository (pip will come soon!)
+Clone this repository, or install with pip:
+
+```bash
+pip install circuit-dawg
+```
 
 ## Usage
 
