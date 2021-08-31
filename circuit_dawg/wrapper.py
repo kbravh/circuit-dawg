@@ -9,7 +9,7 @@ class Dictionary(object):
     Dictionary class for retrieval and binary I/O.
     """
     def __init__(self):
-        self._units = array.array(str("I"))
+        self._units = array.array("I")
 
     ROOT = 0
     "Root index"
@@ -26,13 +26,13 @@ class Dictionary(object):
 
     def read(self, fp):
         "Reads a dictionary from an input stream."
-        self._units = array.array(str("I"))
+        self._units = array.array("I")
         base_size = fp.read(4)
         while True:
             bytes = fp.read(4)
             if not bytes:
                 break
-            point = struct.unpack(str("I"), bytes)[0]
+            point = struct.unpack("I", bytes)[0]
             self._units.append(point)
 
     def contains(self, key):
