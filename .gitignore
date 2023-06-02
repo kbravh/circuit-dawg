@@ -10,3 +10,5 @@ circuit_dawg.egg-info/
 __pycache__
 
 .vscode/
+.venv/
+.coverage
