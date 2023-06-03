@@ -9,6 +9,7 @@ class FilePointer:
     FilePointer class to allow for skipping the first 4 bytes of
     the file (which is the root index of the DAWG).
     """
+
     def __init__(self, fp):
         self.fp = fp
         self.start = 4  # Skip the first 4 bytes
@@ -55,8 +56,9 @@ class Dictionary:
         self.fp.seek(value_index * 4)
         return units.value(struct.unpack("I", self.fp.read(4))[0])
 
-    def read(self, fp):
+    def read(self, fp, path):
         self.fp = FilePointer(fp)
+        self.file_path = path
 
     def contains(self, key):
         "Exact matching."
@@ -126,8 +128,9 @@ class Guide:
         self.fp.seek(index * 2 + 1)
         return struct.unpack("B", self.fp.read(2))[0]
 
-    def read(self, fp):
+    def read(self, fp, path):
         self.fp = FilePointer(fp)
+        self.file_path = path
 
     def close(self):
         if self.fp is not None:

@@ -158,8 +158,8 @@ class CompletionDAWG(DAWG):
         self.guide = wrapper.Guide()
 
         fp = open(path, "rb")
-        self.dct.read(fp)
-        self.guide.read(fp)
+        self.dct.read(fp, path)
+        self.guide.read(fp, path)
 
         return self
 

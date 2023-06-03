@@ -12,3 +12,4 @@ __pycache__
 .vscode/
 .venv/
 .coverage
+tests/dawgs/
