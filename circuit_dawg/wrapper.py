@@ -1,40 +1,58 @@
 import struct
-import array
 
 from . import units
+from os import path
+
+
+class FilePointer:
+    def __init__(self, fp):
+        self.fp = fp
+        self.start = 4  # Skip the first 4 bytes
+
+    def read(self, size):
+        return self.fp.read(size)
+
+    def seek(self, pos):
+        # Adjust the seek position to skip the first 4 bytes
+        adjusted_pos = self.start + pos
+        return self.fp.seek(adjusted_pos)
+
+    def close(self):
+        self.fp.close()
+
+    def __del__(self):
+        if self.fp:
+            self.fp.close()
 
 
 class Dictionary(object):
     """
     Dictionary class for retrieval and binary I/O.
     """
+
     def __init__(self):
-        self._units = array.array("I")
+        self.fp = None
+        self.file_path = None
 
     ROOT = 0
     "Root index"
 
     def has_value(self, index):
         "Checks if a given index is related to the end of a key."
-        return units.has_leaf(self._units[index])
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        return units.has_leaf(base)
 
     def value(self, index):
-        "Gets a value from a given index."
-        offset = units.offset(self._units[index])
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        offset = units.offset(base)
         value_index = (index ^ offset) & units.PRECISION_MASK
-        return units.value(self._units[value_index])
+        self.fp.seek(value_index * 4)
+        return units.value(struct.unpack("I", self.fp.read(4))[0])
 
     def read(self, fp):
-        "Reads a dictionary from an input stream."
-        self._units = array.array("I")
-        base_size = fp.read(4)
-        # struct.iter_unpack() is not available in CircuitPython
-        while True:
-            bytes = fp.read(4)
-            if not bytes:
-                break
-            point = struct.unpack("I", bytes)[0]
-            self._units.append(point)
+        self.fp = FilePointer(fp)
 
     def contains(self, key):
         "Exact matching."
@@ -54,10 +72,13 @@ class Dictionary(object):
 
     def follow_char(self, label, index):
         "Follows a transition"
-        offset = units.offset(self._units[index])
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        offset = units.offset(base)
         next_index = (index ^ offset ^ label) & units.PRECISION_MASK
+        self.fp.seek(next_index * 4)
 
-        if units.label(self._units[next_index]) != label:
+        if units.label(struct.unpack("I", self.fp.read(4))[0]) != label:
             return None
 
         return next_index
@@ -74,34 +95,47 @@ class Dictionary(object):
     @classmethod
     def load(cls, path):
         dawg = cls()
-        with open(path, 'rb') as f:
-            dawg.read(f)
+        dawg.file_path = path
+        fp = open(path, "rb")
+        dawg.read(fp)
         return dawg
+
+    def close(self):
+        if self.fp is not None:
+            self.fp.close()
+            self.fp = None
+            self.file_path = None
 
 
 class Guide(object):
-
     ROOT = 0
 
     def __init__(self):
-        self._units = array.array(str("B"))
+        self.fp = None
+        self.file_path = None
 
     def child(self, index):
-        return self._units[index*2]
+        self.fp.seek(index * 2)
+        return struct.unpack("B", self.fp.read(2))[0]
 
     def sibling(self, index):
-        return self._units[index*2 + 1]
+        self.fp.seek(index * 2 + 1)
+        return struct.unpack("B", self.fp.read(2))[0]
 
     def read(self, fp):
-        base_size = struct.unpack(str("=I"), fp.read(4))[0]
-        self._units.fromfile(fp, base_size*2)
+        self.fp = FilePointer(fp)
+
+    def close(self):
+        if self.fp is not None:
+            self.fp.close()
+            self.fp = None
+            self.file_path = None
 
     def size(self):
-        return len(self._units)
+        return (path.getsize(self.file_path) - 4) // 2
 
 
 class Completer(object):
-
     def __init__(self, dic=None, guide=None):
         self._dic = dic
         self._guide = guide
@@ -127,7 +161,6 @@ class Completer(object):
         index = self._index_stack[-1]
 
         if self._last_index != self._dic.ROOT:
-
             child_label = self._guide.child(index)  # UCharType
 
             if child_label:
@@ -141,7 +174,7 @@ class Completer(object):
                     # Moves to the previous node.
                     if len(self.key) > 0:
                         self.key.pop()
-                        #self.key[-1] = 0
+                        # self.key[-1] = 0
 
                     self._index_stack.pop()
                     if not self._index_stack:

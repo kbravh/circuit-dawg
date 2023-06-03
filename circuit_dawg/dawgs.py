@@ -157,11 +157,17 @@ class CompletionDAWG(DAWG):
         self.dct = wrapper.Dictionary()
         self.guide = wrapper.Guide()
 
-        with open(path, 'rb') as f:
-            self.dct.read(f)
-            self.guide.read(f)
+        fp = open(path, "rb")
+        self.dct.read(fp)
+        self.guide.read(fp)
 
         return self
+
+    def close(self):
+        if self.dct is not None:
+            self.dct.close()
+        if self.guide is not None:
+            self.guide.close()
 
 
 PAYLOAD_SEPARATOR = b'\x01'
