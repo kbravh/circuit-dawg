@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="circuit-dawg",
-    version="1.0.1",
+    version="1.1.0",
     description="Pure-python reader for DAWGs (DAFSAs) that were created by dawgdic C++ library or the DAWG Python library. Optimized to run on CircuitPython.",
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -23,7 +23,7 @@ setup(
         'Topic :: Text Processing :: Linguistic',
     ],
     keywords=[
-      'circuitPython',
+      'CircuitPython',
       'DAWG',
       'DAFSA',
       'word list'

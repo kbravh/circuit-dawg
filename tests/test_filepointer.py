@@ -1,6 +1,6 @@
 import pytest
 import io
-from circuit_dawg import FilePointer
+from circuit_dawg.wrapper import FilePointer
 
 
 def test_seek_and_read():
