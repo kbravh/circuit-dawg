@@ -25,7 +25,7 @@ class FilePointer:
             self.fp.close()
 
 
-class Dictionary(object):
+class Dictionary:
     """
     Dictionary class for retrieval and binary I/O.
     """
@@ -107,7 +107,7 @@ class Dictionary(object):
             self.file_path = None
 
 
-class Guide(object):
+class Guide:
     ROOT = 0
 
     def __init__(self):
@@ -135,7 +135,7 @@ class Guide(object):
         return (path.getsize(self.file_path) - 4) // 2
 
 
-class Completer(object):
+class Completer:
     def __init__(self, dic=None, guide=None):
         self._dic = dic
         self._guide = guide
