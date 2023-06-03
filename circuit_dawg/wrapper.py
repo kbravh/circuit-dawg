@@ -5,6 +5,10 @@ from os import path
 
 
 class FilePointer:
+    """
+    FilePointer class to allow for skipping the first 4 bytes of
+    the file (which is the root index of the DAWG).
+    """
     def __init__(self, fp):
         self.fp = fp
         self.start = 4  # Skip the first 4 bytes

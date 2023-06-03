@@ -1,4 +1,4 @@
-from .wrapper import Dictionary
+from .wrapper import Dictionary, Guide, FilePointer, Completer
 from .dawgs import (
     DAWG,
     CompletionDAWG,
@@ -7,3 +7,5 @@ from .dawgs import (
     IntDAWG,
     IntCompletionDAWG,
 )
+
+from .units import has_leaf, value, label, offset
