@@ -155,8 +155,8 @@ class CompletionDAWG(DAWG):
 
         fp = open(path, "rb")
         self.dct.read(fp, path)
-        # skip dict base_size (4 bytes), dictionary, and guide base_size (4 bytes)
-        self.guide.read(fp, path, 4 + self.dct.fp.base_size*4 + 4)
+        # skip dict base_size (4 bytes) and dictionary
+        self.guide.read(fp, path, 4 + self.dct.fp.base_size * 4)
 
         return self
 
