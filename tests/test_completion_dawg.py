@@ -11,8 +11,8 @@ class TestCompletionDAWG:
     @pytest.fixture(autouse=True, scope="function")
     def setup_class(self):
         # Build test dawgs using original dawg library
-        dawg.CompletionDAWG(self.keys).save("completion.dawg")
-        dawg.CompletionDAWG([]).save("completion-empty.dawg")
+        dawg.CompletionDAWG(self.keys).save(self.test_files[0])
+        dawg.CompletionDAWG([]).save(self.test_files[1])
         # Let tests run
         yield
         # Cleanup
@@ -20,37 +20,37 @@ class TestCompletionDAWG:
             if os.path.exists(f):
                 os.remove(f)
 
-    def test_contains(self):
-        d = CompletionDAWG().load("completion.dawg")
-        for key in self.keys:
-            assert key in d
+    @pytest.mark.parametrize("key", keys)
+    def test_contains(self, key):
+        d = CompletionDAWG().load(self.test_files[0])
+        assert key in d
 
     def test_contains_bytes(self):
-        d = CompletionDAWG().load("completion.dawg")
+        d = CompletionDAWG().load(self.test_files[0])
         for key in self.keys:
             assert key.encode("utf8") in d
 
     def test_keys(self):
-        d = CompletionDAWG().load("completion.dawg")
+        d = CompletionDAWG().load(self.test_files[0])
         assert d.keys() == sorted(self.keys)
 
     def test_iterkeys(self):
-        d = CompletionDAWG().load("completion.dawg")
+        d = CompletionDAWG().load(self.test_files[0])
         assert list(d.iterkeys()) == sorted(self.keys)
 
     def test_completion(self):
-        d = CompletionDAWG().load("completion.dawg")
+        d = CompletionDAWG().load(self.test_files[0])
 
         assert d.keys("z") == []
         assert d.keys("b") == ["bar"]
         assert d.keys("foo") == ["foo", "foobar"]
 
     def test_prefixes(self):
-        d = CompletionDAWG().load("completion.dawg")
+        d = CompletionDAWG().load(self.test_files[0])
         assert d.prefixes("foobarz") == ["f", "foo", "foobar"]
         assert d.prefixes("x") == []
         assert d.prefixes("bar") == ["bar"]
 
     def test_empty_dawg(self):
-        d = CompletionDAWG().load("completion-empty.dawg")
+        d = CompletionDAWG().load(self.test_files[1])
         assert d.keys() == []
