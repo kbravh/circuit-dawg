@@ -1,5 +1,5 @@
 import pytest
-from circuit_dawg import RecordDAWG
+from circuit_dawg import DAWG, RecordDAWG
 import os
 import dawg
 
@@ -71,3 +71,70 @@ class TestRecordDAWG:
         assert d.prefixes("foobarz") == ["foo", "foobar"]
         assert d.prefixes("x") == []
         assert d.prefixes("bar") == ["bar"]
+
+
+class TestPredictionRecordDAWG:
+    path = "prediction-record.dawg"
+
+    REPLACES = DAWG.compile_replaces({"Е": "Ё"})
+
+    DATA = [
+        "ЁЖИК",
+        "ЁЖИКЕ",
+        "ЁЖ",
+        "ДЕРЕВНЯ",
+        "ДЕРЁВНЯ",
+        "ЕМ",
+        "ОЗЕРА",
+        "ОЗЁРА",
+        "ОЗЕРО",
+    ]
+
+    SUITE = [
+        ("УЖ", []),
+        ("ЕМ", ["ЕМ"]),
+        ("ЁМ", []),
+        ("ЁЖ", ["ЁЖ"]),
+        ("ЕЖ", ["ЁЖ"]),
+        ("ЁЖИК", ["ЁЖИК"]),
+        ("ЕЖИКЕ", ["ЁЖИКЕ"]),
+        ("ДЕРЕВНЯ", ["ДЕРЕВНЯ", "ДЕРЁВНЯ"]),
+        ("ДЕРЁВНЯ", ["ДЕРЁВНЯ"]),
+        ("ОЗЕРА", ["ОЗЕРА", "ОЗЁРА"]),
+        ("ОЗЕРО", ["ОЗЕРО"]),
+    ]
+
+    SUITE_ITEMS = [
+        (it[0], [(w, [(len(w),)]) for w in it[1]])  # key  # item, value pair
+        for it in SUITE
+    ]
+
+    SUITE_VALUES = [(it[0], [[(len(w),)] for w in it[1]]) for it in SUITE]  # key
+
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_class(self):
+        # Build test dawg using original dawg library
+        dawg.RecordDAWG(str("=H"), [(k, (len(k),)) for k in self.DATA]).save(self.path)
+        # Let tests run
+        yield
+        # Cleanup
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
+    def record_dawg(self):
+        return RecordDAWG(str("=H")).load(self.path)
+
+    @pytest.mark.parametrize(("word", "prediction"), SUITE)
+    def test_record_dawg_prediction(self, word, prediction):
+        d = self.record_dawg()
+        assert d.similar_keys(word, self.REPLACES) == prediction
+
+    @pytest.mark.parametrize(("word", "prediction"), SUITE_ITEMS)
+    def test_record_dawg_items(self, word, prediction):
+        d = self.record_dawg()
+        assert d.similar_items(word, self.REPLACES) == prediction
+
+    @pytest.mark.parametrize(("word", "prediction"), SUITE_VALUES)
+    def test_record_dawg_items_values(self, word, prediction):
+        d = self.record_dawg()
+        assert d.similar_item_values(word, self.REPLACES) == prediction
