@@ -10,16 +10,18 @@ class FilePointer:
     the file (which is the root index of the DAWG).
     """
 
-    def __init__(self, fp):
+    def __init__(self, fp, skip=4):
         self.fp = fp
-        self.start = 4  # Skip the first 4 bytes
+        self.fp.seek(0)
+        self.base_size = struct.unpack(str("=I"), fp.read(4))[0]
+        self.skip = skip # The first # bytes that belong to other models
 
     def read(self, size):
         return self.fp.read(size)
 
     def seek(self, pos):
-        # Adjust the seek position to skip the first 4 bytes
-        adjusted_pos = self.start + pos
+        # Adjust the seek position to skip the irrelevant bytes
+        adjusted_pos = self.skip + pos
         return self.fp.seek(adjusted_pos)
 
     def close(self):
@@ -122,14 +124,14 @@ class Guide:
 
     def child(self, index):
         self.fp.seek(index * 2)
-        return struct.unpack("B", self.fp.read(2))[0]
+        return struct.unpack("B", self.fp.read(1))[0]
 
     def sibling(self, index):
         self.fp.seek(index * 2 + 1)
-        return struct.unpack("B", self.fp.read(2))[0]
+        return struct.unpack("B", self.fp.read(1))[0]
 
-    def read(self, fp, path):
-        self.fp = FilePointer(fp)
+    def read(self, fp, path, skip=0):
+        self.fp = FilePointer(fp, skip=skip)
         self.file_path = path
 
     def close(self):
@@ -139,7 +141,7 @@ class Guide:
             self.file_path = None
 
     def size(self):
-        return (path.getsize(self.file_path) - 4) // 2
+        return self.fp.base_size * 2
 
 
 class Completer:
