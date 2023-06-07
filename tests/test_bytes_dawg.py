@@ -11,19 +11,20 @@ class TestBytesDAWG:
         ("foo", b"data3"),
         ("foobar", b"data4"),
     )
+    path = "bytes.dawg"
 
     @pytest.fixture(autouse=True, scope="function")
     def setup_class(self):
         # Build test dawg using original dawg library
-        dawg.BytesDAWG(self.DATA).save("bytes.dawg")
+        dawg.BytesDAWG(self.DATA).save(self.path)
         # Let tests run
         yield
         # Cleanup
-        if os.path.exists("bytes.dawg"):
-            os.remove("bytes.dawg")
+        if os.path.exists(self.path):
+            os.remove(self.path)
 
     def dawg(self):
-        return BytesDAWG().load("bytes.dawg")
+        return BytesDAWG().load(self.path)
 
     def test_contains(self):
         d = self.dawg()
