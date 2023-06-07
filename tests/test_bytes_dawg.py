@@ -21,7 +21,11 @@ class TestBytesDAWG:
         yield
         # Cleanup
         if os.path.exists(self.path):
-            os.remove(self.path)
+            # try to remove the file
+            try:
+                os.remove(self.path)
+            except PermissionError:
+                pass
 
     def dawg(self):
         return BytesDAWG().load(self.path)
@@ -42,20 +46,15 @@ class TestBytesDAWG:
         assert d["bar"] == [b"data2"]
         assert d["foobar"] == [b"data4"]
 
-    def test_getitem_missing(self):
+    @pytest.mark.parametrize("key", ["x", "food", "foobarz", "f"])
+    def test_getitem_missing(self, key):
+        """
+        Test that BytesDAWG raises a KeyError when the key does not exist.
+        """
         d = self.dawg()
 
         with pytest.raises(KeyError):
-            d["x"]
-
-        with pytest.raises(KeyError):
-            d["food"]
-
-        with pytest.raises(KeyError):
-            d["foobarz"]
-
-        with pytest.raises(KeyError):
-            d["f"]
+            d[key]
 
     def test_keys(self):
         d = self.dawg()
