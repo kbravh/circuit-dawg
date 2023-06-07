@@ -105,7 +105,7 @@ class Dictionary:
         dawg = cls()
         dawg.file_path = path
         fp = open(path, "rb")
-        dawg.read(fp)
+        dawg.read(fp, path)
         return dawg
 
     def close(self):
