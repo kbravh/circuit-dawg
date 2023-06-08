@@ -27,7 +27,8 @@ class FilePointer:
         return self.fp.seek(adjusted_pos)
 
     def close(self):
-        self.fp.close()
+        if self.fp:
+          self.fp.close()
 
     def __del__(self):
         if self.fp:

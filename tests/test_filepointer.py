@@ -1,6 +1,7 @@
 import pytest
 import io
 from circuit_dawg.wrapper import FilePointer
+import gc
 
 
 class TestFilePointer:
@@ -18,20 +19,6 @@ class TestFilePointer:
         fp.seek(6)
         assert fp.read(5) == b"World"
 
-    def test_close(self, fp):
-        # Close should work without raising an exception
-        try:
-            fp.close()
-        except Exception:
-            pytest.fail("Unexpected Exception raised")
-
-    def test_destructor(self, fp):
-        # Delete should work without raising an exception
-        try:
-            del fp
-        except Exception:
-            pytest.fail("Unexpected Exception raised")
-
     def test_base_size(self, fp):
         """
         The base_size should be the first 4 bytes of the file.
@@ -47,3 +34,8 @@ class TestFilePointer:
         """
         fp.seek(skip[0])
         assert fp.fp.tell() == skip[1]
+
+    def test_close(self, fp):
+        file = fp.fp
+        fp.close()
+        assert file.closed is True
