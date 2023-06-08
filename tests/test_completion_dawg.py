@@ -57,3 +57,9 @@ class TestCompletionDAWG:
     def test_empty_dawg(self):
         d = CompletionDAWG().load(self.test_files[1])
         assert d.keys() == []
+
+    def test_unloaded_dawg(self):
+        """Test that an error is raised when using a dawg before loading a file"""
+        d = CompletionDAWG()
+        with pytest.raises(AssertionError):
+            d.keys()

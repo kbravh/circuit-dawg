@@ -46,13 +46,13 @@ class Dictionary:
 
     def has_value(self, index):
         "Checks if a given index is related to the end of a key."
-        assert self.fp is not None, "read() must be called before using Dictionary"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
         base = struct.unpack("I", self.fp.read(4))[0]
         return units.has_leaf(base)
 
     def value(self, index):
-        assert self.fp is not None, "read() must be called before using Dictionary"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
         base = struct.unpack("I", self.fp.read(4))[0]
         offset = units.offset(base)
@@ -82,7 +82,7 @@ class Dictionary:
 
     def follow_char(self, label, index):
         "Follows a transition"
-        assert self.fp is not None, "read() must be called before using Dictionary"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
         base = struct.unpack("I", self.fp.read(4))[0]
         offset = units.offset(base)
@@ -126,12 +126,12 @@ class Guide:
         self.file_path = None
 
     def child(self, index):
-        assert self.fp is not None, "read() must be called before using Guide"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
         self.fp.seek(index * 2)
         return struct.unpack("B", self.fp.read(1))[0]
 
     def sibling(self, index):
-        assert self.fp is not None, "read() must be called before using Guide"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
         self.fp.seek(index * 2 + 1)
         return struct.unpack("B", self.fp.read(1))[0]
 
@@ -146,7 +146,7 @@ class Guide:
             self.file_path = None
 
     def size(self):
-        assert self.fp is not None, "read() must be called before using Guide"
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
         return self.fp.base_size * 2
 
 

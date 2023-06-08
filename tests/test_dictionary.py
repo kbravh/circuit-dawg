@@ -38,3 +38,8 @@ class TestDictionary:
 
     def test_not_find(self, dictionary):
         assert dictionary.find(b"x") == -1
+
+    def test_unloaded_fp(self):
+        dictionary = Dictionary()
+        with pytest.raises(AssertionError):
+            dictionary.find(b"x")

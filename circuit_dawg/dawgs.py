@@ -13,6 +13,7 @@ class DAWG:
         self.dct = None
 
     def __contains__(self, key):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         if not isinstance(key, bytes):
             key = key.encode()
         return self.dct.contains(key)
@@ -25,9 +26,11 @@ class DAWG:
         return self
 
     def _has_value(self, index):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self.dct.has_value(index)
 
     def _similar_keys(self, current_prefix, key, index, replace_chars):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         res = []
         start_pos = len(current_prefix)
         end_pos = len(key)
@@ -73,6 +76,7 @@ class DAWG:
 
         This may be useful e.g. for handling single-character umlauts.
         """
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self._similar_keys("", key, self.dct.ROOT, replaces)
 
     @classmethod
@@ -89,6 +93,7 @@ class DAWG:
         """
         Returns a list with keys of this DAWG that are prefixes of the ``key``.
         """
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         res = []
         index = self.dct.ROOT
         if not isinstance(key, bytes):
@@ -118,6 +123,7 @@ class CompletionDAWG(DAWG):
         self.guide = None
 
     def keys(self, prefix=""):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         b_prefix = prefix.encode("utf8")
         res = []
 
@@ -155,6 +161,7 @@ class CompletionDAWG(DAWG):
 
         fp = open(path, "rb")
         self.dct.read(fp, path)
+        assert isinstance(self.dct.fp, wrapper.FilePointer), "FilePointer was not loaded correctly"
         # skip dict base_size (4 bytes) and dictionary
         self.guide.read(fp, path, 4 + self.dct.fp.base_size * 4)
 
@@ -465,6 +472,7 @@ class IntDAWG(DAWG):
         return res
 
     def b_get_value(self, key):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self.dct.find(key)
 
 
