@@ -41,6 +41,10 @@ class TestCompletionDAWG:
         d = CompletionDAWG().load(self.test_files[0])
         assert list(d.iterkeys()) == sorted(self.keys)
 
+    def test_bad_iterkeys(self):
+        d = CompletionDAWG().load(self.test_files[0])
+        d.iterkeys("8675309") == None
+
     def test_completion(self):
         d = CompletionDAWG().load(self.test_files[0])
 

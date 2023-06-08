@@ -46,3 +46,14 @@ class TestDictionary:
 
     def test_follow_nonexistent_char(self, dictionary):
         assert dictionary.follow_bytes(b"z", 5) is None
+
+    def test_not_contains(self, dictionary):
+        assert dictionary.contains(b'6') == False
+
+    def test_not_find(self, dictionary):
+        assert dictionary.find(b'6') == -1
+
+    def test_close(self, dictionary):
+        fp = dictionary.fp.fp
+        dictionary.close()
+        assert fp.closed
