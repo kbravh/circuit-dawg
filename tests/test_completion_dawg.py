@@ -18,7 +18,10 @@ class TestCompletionDAWG:
         # Cleanup
         for f in self.test_files:
             if os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except PermissionError:
+                    pass
 
     @pytest.mark.parametrize("key", keys)
     def test_contains(self, key):

@@ -9,27 +9,32 @@ class TestDictionary:
     path = "int.dawg"
     words = words100k()
 
-    @pytest.fixture(autouse=True, scope="function")
+    @pytest.fixture(autouse=True, scope="function", name="dictionary")
     def setup_class(self):
         # Build test dawg using original dawg library
         values = [len(word) for word in self.words]
         dawg.IntDAWG(zip(self.words, values)).save(self.path)
+        # load our dictionary
+        dictionary = Dictionary().load(self.path)
         # Let tests run
-        yield
+        yield dictionary
         # Cleanup
         if os.path.exists(self.path):
-            os.remove(self.path)
+            try:
+                os.remove(self.path)
+            except OSError:
+                pass
 
-    def dic(self):
-        return Dictionary().load(self.path)
-
-    def test_contains(self):
-        dictionary = self.dic()
+    def test_contains(self, dictionary):
         for word in self.words:
-            assert dictionary.contains(word.encode('utf8'))
+            assert dictionary.contains(word.encode("utf8"))
 
-    def test_find(self):
-        dictionary = self.dic()
+    def test_not_contains(self, dictionary):
+        assert not dictionary.contains(b"x")
+
+    def test_find(self, dictionary):
         for word in self.words:
-            assert dictionary.find(word.encode('utf8')) == len(word)
+            assert dictionary.find(word.encode("utf8")) == len(word)
 
+    def test_not_find(self, dictionary):
+        assert dictionary.find(b"x") == -1

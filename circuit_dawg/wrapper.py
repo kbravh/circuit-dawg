@@ -14,7 +14,9 @@ class FilePointer:
         self.fp = fp
         self.fp.seek(0 + skip)
         self.base_size = struct.unpack(str("=I"), fp.read(4))[0]
-        self.skip = skip + 4 # The first # bytes that belong to other models and the base_size
+        self.skip = (
+            skip + 4
+        )  # The first # bytes that belong to other models and the base_size
 
     def read(self, size):
         return self.fp.read(size)
