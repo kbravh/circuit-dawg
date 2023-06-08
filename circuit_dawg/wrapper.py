@@ -89,7 +89,8 @@ class Dictionary:
         next_index = (index ^ offset ^ label) & units.PRECISION_MASK
         self.fp.seek(next_index * 4)
 
-        if units.label(struct.unpack("I", self.fp.read(4))[0]) != label:
+        new_label = units.label(struct.unpack("I", self.fp.read(4))[0])
+        if new_label != label:
             return None
 
         return next_index

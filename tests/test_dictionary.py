@@ -43,3 +43,6 @@ class TestDictionary:
         dictionary = Dictionary()
         with pytest.raises(AssertionError):
             dictionary.find(b"x")
+
+    def test_follow_nonexistent_char(self, dictionary):
+        assert dictionary.follow_bytes(b"z", 5) is None
