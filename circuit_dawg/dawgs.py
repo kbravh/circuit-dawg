@@ -195,9 +195,6 @@ class BytesDAWG(CompletionDAWG):
             key = key.encode("utf8")
         return bool(self._follow_key(key))
 
-    #    def b_has_key(self, key):
-    #        return bool(self._follow_key(key))
-
     def __getitem__(self, key):
         res = self.get(key)
         if res is None:
