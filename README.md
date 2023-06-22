@@ -52,6 +52,11 @@ Submit an [issue or suggestion](https://github.com/kbravh/circuit-dawg/issues)
 
 Feel free to submit ideas, bugs or pull requests.
 
+### Local development
+Create a virtual environment and install the requirements in `requirements-dev.txt`.
+
+Tests can be run (with coverage) using `python -m pytest --cov=circuit_dawg tests/`.
+
 # Authors & Contributors
 
 - [kbravh](https://github.com/kbravh) - <karey.higuera@gmail.com>

@@ -1,40 +1,68 @@
 import struct
-import array
-
 from . import units
 
+class FilePointer:
+    """
+    FilePointer class to allow for skipping the first 4 bytes of
+    the file (which is the root index of the DAWG).
+    """
 
-class Dictionary(object):
+    def __init__(self, fp, skip=0):
+        self.fp = fp
+        self.fp.seek(0 + skip)
+        self.base_size = struct.unpack(str("=I"), fp.read(4))[0]
+        self.skip = (
+            skip + 4
+        )  # The first # bytes that belong to other models and the base_size
+
+    def read(self, size):
+        return self.fp.read(size)
+
+    def seek(self, pos):
+        # Adjust the seek position to skip the irrelevant bytes
+        adjusted_pos = self.skip + pos
+        return self.fp.seek(adjusted_pos)
+
+    def close(self):
+        if self.fp:
+          self.fp.close()
+
+    def __del__(self):
+        if self.fp:
+            self.fp.close()
+
+
+class Dictionary:
     """
     Dictionary class for retrieval and binary I/O.
     """
+
     def __init__(self):
-        self._units = array.array("I")
+        self.fp = None
+        self.file_path = None
 
     ROOT = 0
     "Root index"
 
     def has_value(self, index):
         "Checks if a given index is related to the end of a key."
-        return units.has_leaf(self._units[index])
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        return units.has_leaf(base)
 
     def value(self, index):
-        "Gets a value from a given index."
-        offset = units.offset(self._units[index])
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        offset = units.offset(base)
         value_index = (index ^ offset) & units.PRECISION_MASK
-        return units.value(self._units[value_index])
+        self.fp.seek(value_index * 4)
+        return units.value(struct.unpack("I", self.fp.read(4))[0])
 
-    def read(self, fp):
-        "Reads a dictionary from an input stream."
-        self._units = array.array("I")
-        base_size = fp.read(4)
-        # struct.iter_unpack() is not available in CircuitPython
-        while True:
-            bytes = fp.read(4)
-            if not bytes:
-                break
-            point = struct.unpack("I", bytes)[0]
-            self._units.append(point)
+    def read(self, fp, path):
+        self.fp = FilePointer(fp)
+        self.file_path = path
 
     def contains(self, key):
         "Exact matching."
@@ -54,10 +82,15 @@ class Dictionary(object):
 
     def follow_char(self, label, index):
         "Follows a transition"
-        offset = units.offset(self._units[index])
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
+        self.fp.seek(index * 4)
+        base = struct.unpack("I", self.fp.read(4))[0]
+        offset = units.offset(base)
         next_index = (index ^ offset ^ label) & units.PRECISION_MASK
+        self.fp.seek(next_index * 4)
 
-        if units.label(self._units[next_index]) != label:
+        new_label = units.label(struct.unpack("I", self.fp.read(4))[0])
+        if new_label != label:
             return None
 
         return next_index
@@ -74,35 +107,52 @@ class Dictionary(object):
     @classmethod
     def load(cls, path):
         dawg = cls()
-        with open(path, 'rb') as f:
-            dawg.read(f)
+        dawg.file_path = path
+        fp = open(path, "rb")
+        dawg.read(fp, path)
         return dawg
 
+    def close(self):
+        if self.fp is not None:
+            self.fp.close()
+            self.fp = None
+            self.file_path = None
 
-class Guide(object):
 
+class Guide:
     ROOT = 0
 
     def __init__(self):
-        self._units = array.array(str("B"))
+        self.fp = None
+        self.file_path = None
 
     def child(self, index):
-        return self._units[index*2]
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
+        self.fp.seek(index * 2)
+        return struct.unpack("B", self.fp.read(1))[0]
 
     def sibling(self, index):
-        return self._units[index*2 + 1]
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
+        self.fp.seek(index * 2 + 1)
+        return struct.unpack("B", self.fp.read(1))[0]
 
-    def read(self, fp):
-        base_size = struct.unpack(str("=I"), fp.read(4))[0]
-        self._units.fromfile(fp, base_size*2)
+    def read(self, fp, path, skip=0):
+        self.fp = FilePointer(fp, skip=skip)
+        self.file_path = path
+
+    def close(self):
+        if self.fp is not None:
+            self.fp.close()
+            self.fp = None
+            self.file_path = None
 
     def size(self):
-        return len(self._units)
+        assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"
+        return self.fp.base_size * 2
 
 
-class Completer(object):
-
-    def __init__(self, dic=None, guide=None):
+class Completer:
+    def __init__(self, dic, guide):
         self._dic = dic
         self._guide = guide
 
@@ -127,7 +177,6 @@ class Completer(object):
         index = self._index_stack[-1]
 
         if self._last_index != self._dic.ROOT:
-
             child_label = self._guide.child(index)  # UCharType
 
             if child_label:
@@ -141,7 +190,7 @@ class Completer(object):
                     # Moves to the previous node.
                     if len(self.key) > 0:
                         self.key.pop()
-                        #self.key[-1] = 0
+                        # self.key[-1] = 0
 
                     self._index_stack.pop()
                     if not self._index_stack:

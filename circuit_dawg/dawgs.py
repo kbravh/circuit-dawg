@@ -3,14 +3,17 @@ from binascii import a2b_base64
 
 from . import wrapper
 
-class DAWG(object):
+
+class DAWG:
     """
     Base DAWG wrapper.
     """
+
     def __init__(self):
         self.dct = None
 
     def __contains__(self, key):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         if not isinstance(key, bytes):
             key = key.encode()
         return self.dct.contains(key)
@@ -23,17 +26,18 @@ class DAWG(object):
         return self
 
     def _has_value(self, index):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self.dct.has_value(index)
 
     def _similar_keys(self, current_prefix, key, index, replace_chars):
-
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         res = []
         start_pos = len(current_prefix)
         end_pos = len(key)
         word_pos = start_pos
 
         while word_pos < end_pos:
-            b_step = key[word_pos].encode('utf8')
+            b_step = key[word_pos].encode("utf8")
 
             if b_step in replace_chars:
                 next_index = index
@@ -43,7 +47,9 @@ class DAWG(object):
 
                 if next_index is not None:
                     prefix = current_prefix + key[start_pos:word_pos] + u_replace_char
-                    extra_keys = self._similar_keys(prefix, key, next_index, replace_chars)
+                    extra_keys = self._similar_keys(
+                        prefix, key, next_index, replace_chars
+                    )
                     res += extra_keys
 
             index = self.dct.follow_bytes(b_step, index)
@@ -70,31 +76,28 @@ class DAWG(object):
 
         This may be useful e.g. for handling single-character umlauts.
         """
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self._similar_keys("", key, self.dct.ROOT, replaces)
 
     @classmethod
     def compile_replaces(cls, replaces):
-
-        for k,v in replaces.items():
+        for k, v in replaces.items():
             if len(k) != 1 or len(v) != 1:
                 raise ValueError("Keys and values must be single-char unicode strings.")
 
         return dict(
-            (
-                k.encode('utf8'),
-                (v.encode('utf8'), v)
-            )
-            for k, v in replaces.items()
+            (k.encode("utf8"), (v.encode("utf8"), v)) for k, v in replaces.items()
         )
 
     def prefixes(self, key):
-        '''
+        """
         Returns a list with keys of this DAWG that are prefixes of the ``key``.
-        '''
+        """
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         res = []
         index = self.dct.ROOT
         if not isinstance(key, bytes):
-            key = key.encode('utf8')
+            key = key.encode("utf8")
 
         pos = 1
 
@@ -104,11 +107,10 @@ class DAWG(object):
                 break
 
             if self._has_value(index):
-                res.append(key[:pos].decode('utf8'))
+                res.append(key[:pos].decode("utf8"))
             pos += 1
 
         return res
-
 
 
 class CompletionDAWG(DAWG):
@@ -121,7 +123,8 @@ class CompletionDAWG(DAWG):
         self.guide = None
 
     def keys(self, prefix=""):
-        b_prefix = prefix.encode('utf8')
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
+        b_prefix = prefix.encode("utf8")
         res = []
 
         index = self.dct.follow_bytes(b_prefix, self.dct.ROOT)
@@ -132,13 +135,13 @@ class CompletionDAWG(DAWG):
         completer.start(index, b_prefix)
 
         while completer.next():
-            key = completer.key.decode('utf8')
+            key = completer.key.decode("utf8")
             res.append(key)
 
         return res
 
     def iterkeys(self, prefix=""):
-        b_prefix = prefix.encode('utf8')
+        b_prefix = prefix.encode("utf8")
         index = self.dct.follow_bytes(b_prefix, self.dct.ROOT)
         if index is None:
             return
@@ -147,8 +150,7 @@ class CompletionDAWG(DAWG):
         completer.start(index, b_prefix)
 
         while completer.next():
-            yield completer.key.decode('utf8')
-
+            yield completer.key.decode("utf8")
 
     def load(self, path):
         """
@@ -157,15 +159,24 @@ class CompletionDAWG(DAWG):
         self.dct = wrapper.Dictionary()
         self.guide = wrapper.Guide()
 
-        with open(path, 'rb') as f:
-            self.dct.read(f)
-            self.guide.read(f)
+        fp = open(path, "rb")
+        self.dct.read(fp, path)
+        assert isinstance(self.dct.fp, wrapper.FilePointer), "FilePointer was not loaded correctly"
+        # skip dict base_size (4 bytes) and dictionary
+        self.guide.read(fp, path, 4 + self.dct.fp.base_size * 4)
 
         return self
 
+    def close(self):
+        if self.dct is not None:
+            self.dct.close()
+        if self.guide is not None:
+            self.guide.close()
 
-PAYLOAD_SEPARATOR = b'\x01'
+
+PAYLOAD_SEPARATOR = b"\x01"
 MAX_VALUE_SIZE = 32768
+
 
 class BytesDAWG(CompletionDAWG):
     """
@@ -181,11 +192,8 @@ class BytesDAWG(CompletionDAWG):
 
     def __contains__(self, key):
         if not isinstance(key, bytes):
-            key = key.encode('utf8')
+            key = key.encode("utf8")
         return bool(self._follow_key(key))
-
-#    def b_has_key(self, key):
-#        return bool(self._follow_key(key))
 
     def __getitem__(self, key):
         res = self.get(key)
@@ -199,7 +207,7 @@ class BytesDAWG(CompletionDAWG):
         or ``default`` if the key is not found.
         """
         if not isinstance(key, bytes):
-            key = key.encode('utf8')
+            key = key.encode("utf8")
 
         return self.b_get_value(key) or default
 
@@ -236,7 +244,7 @@ class BytesDAWG(CompletionDAWG):
 
     def keys(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
         res = []
 
         index = self.dct.ROOT
@@ -251,13 +259,13 @@ class BytesDAWG(CompletionDAWG):
 
         while completer.next():
             payload_idx = completer.key.index(self._payload_separator)
-            u_key = completer.key[:payload_idx].decode('utf8')
+            u_key = completer.key[:payload_idx].decode("utf8")
             res.append(u_key)
         return res
 
     def iterkeys(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
 
         index = self.dct.ROOT
 
@@ -271,12 +279,12 @@ class BytesDAWG(CompletionDAWG):
 
         while completer.next():
             payload_idx = completer.key.index(self._payload_separator)
-            u_key = completer.key[:payload_idx].decode('utf8')
+            u_key = completer.key[:payload_idx].decode("utf8")
             yield u_key
 
     def items(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
         res = []
 
         index = self.dct.ROOT
@@ -291,14 +299,17 @@ class BytesDAWG(CompletionDAWG):
         while completer.next():
             key, value = completer.key.split(self._payload_separator)
             res.append(
-                (key.decode('utf8'), a2b_base64(bytes(value))) # bytes() cast is a python 2.6 fix
+                (
+                    key.decode("utf8"),
+                    a2b_base64(bytes(value)),
+                )  # bytes() cast is a python 2.6 fix
             )
 
         return res
 
     def iteritems(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
 
         index = self.dct.ROOT
         if prefix:
@@ -311,22 +322,23 @@ class BytesDAWG(CompletionDAWG):
 
         while completer.next():
             key, value = completer.key.split(self._payload_separator)
-            item = (key.decode('utf8'), a2b_base64(bytes(value))) # bytes() cast is a python 2.6 fix
+            item = (
+                key.decode("utf8"),
+                a2b_base64(bytes(value)),
+            )  # bytes() cast is a python 2.6 fix
             yield item
-
 
     def _has_value(self, index):
         return self.dct.follow_bytes(PAYLOAD_SEPARATOR, index)
 
     def _similar_items(self, current_prefix, key, index, replace_chars):
-
         res = []
         start_pos = len(current_prefix)
         end_pos = len(key)
         word_pos = start_pos
 
         while word_pos < end_pos:
-            b_step = key[word_pos].encode('utf8')
+            b_step = key[word_pos].encode("utf8")
 
             if b_step in replace_chars:
                 next_index = index
@@ -335,7 +347,9 @@ class BytesDAWG(CompletionDAWG):
                 next_index = self.dct.follow_bytes(b_replace_char, next_index)
                 if next_index:
                     prefix = current_prefix + key[start_pos:word_pos] + u_replace_char
-                    extra_items = self._similar_items(prefix, key, next_index, replace_chars)
+                    extra_items = self._similar_items(
+                        prefix, key, next_index, replace_chars
+                    )
                     res += extra_items
 
             index = self.dct.follow_bytes(b_step, index)
@@ -364,14 +378,13 @@ class BytesDAWG(CompletionDAWG):
         """
         return self._similar_items("", key, self.dct.ROOT, replaces)
 
-
     def _similar_item_values(self, start_pos, key, index, replace_chars):
         res = []
         end_pos = len(key)
         word_pos = start_pos
 
         while word_pos < end_pos:
-            b_step = key[word_pos].encode('utf8')
+            b_step = key[word_pos].encode("utf8")
 
             if b_step in replace_chars:
                 next_index = index
@@ -379,7 +392,9 @@ class BytesDAWG(CompletionDAWG):
 
                 next_index = self.dct.follow_bytes(b_replace_char, next_index)
                 if next_index:
-                    extra_items = self._similar_item_values(word_pos+1, key, next_index, replace_chars)
+                    extra_items = self._similar_item_values(
+                        word_pos + 1, key, next_index, replace_chars
+                    )
                     res += extra_items
 
             index = self.dct.follow_bytes(b_step, index)
@@ -429,11 +444,13 @@ class RecordDAWG(BytesDAWG):
 
 LOOKUP_ERROR = -1
 
+
 class IntDAWG(DAWG):
     """
     Dict-like class based on DAWG.
     It can store integer values for unicode keys.
     """
+
     def __getitem__(self, key):
         res = self.get(key, LOOKUP_ERROR)
         if res == LOOKUP_ERROR:
@@ -445,13 +462,14 @@ class IntDAWG(DAWG):
         Return value for the given key or ``default`` if the key is not found.
         """
         if not isinstance(key, bytes):
-            key = key.encode('utf8')
+            key = key.encode("utf8")
         res = self.b_get_value(key)
         if res == LOOKUP_ERROR:
             return default
         return res
 
     def b_get_value(self, key):
+        assert isinstance(self.dct, wrapper.Dictionary), "load() must be called before using DAWG"
         return self.dct.find(key)
 
 
@@ -460,9 +478,10 @@ class IntCompletionDAWG(CompletionDAWG, IntDAWG):
     Dict-like class based on DAWG.
     It can store integer values for unicode keys and support key completion.
     """
+
     def items(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
         res = []
         index = self.dct.ROOT
 
@@ -475,15 +494,13 @@ class IntCompletionDAWG(CompletionDAWG, IntDAWG):
         completer.start(index, prefix)
 
         while completer.next():
-            res.append(
-                (completer.key.decode('utf8'), completer.value())
-            )
+            res.append((completer.key.decode("utf8"), completer.value()))
 
         return res
 
     def iteritems(self, prefix=""):
         if not isinstance(prefix, bytes):
-            prefix = prefix.encode('utf8')
+            prefix = prefix.encode("utf8")
         index = self.dct.ROOT
 
         if prefix:
@@ -495,4 +512,4 @@ class IntCompletionDAWG(CompletionDAWG, IntDAWG):
         completer.start(index, prefix)
 
         while completer.next():
-            yield completer.key.decode('utf8'), completer.value()
+            yield completer.key.decode("utf8"), completer.value()

@@ -8,3 +8,7 @@ circuit_dawg.egg-info/
 *.orig
 .pytest*
 __pycache__
+
+.vscode/
+.venv/
+.coverage
