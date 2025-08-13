@@ -1,0 +1,24 @@
+[project]
+name = "circuit-dawg"
+version = "0.1.0"
+description = "A Pure-Python package for reading DAWG files, optimized for use with CircuitPython and microcontrollers."
+authors = [
+    {name = "Karey Higuera",email = "karey.higuera@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+coverage = "^7.7.0"
+dawg = "^0.8.0"
+pytest = "^8.3.5"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
