@@ -1,7 +1,10 @@
-import dawg
-from circuit_dawg import BytesDAWG
 import os
+
 import pytest
+
+from circuit_dawg import BytesDAWG
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestBytesDAWG:
@@ -11,24 +14,9 @@ class TestBytesDAWG:
         ("foo", b"data3"),
         ("foobar", b"data4"),
     )
-    path = "bytes.dawg"
-
-    @pytest.fixture(autouse=True, scope="function")
-    def setup_class(self):
-        # Build test dawg using original dawg library
-        dawg.BytesDAWG(self.DATA).save(self.path)
-        # Let tests run
-        yield
-        # Cleanup
-        if os.path.exists(self.path):
-            # try to remove the file
-            try:
-                os.remove(self.path)
-            except PermissionError:
-                pass
 
     def dawg(self):
-        return BytesDAWG().load(self.path)
+        return BytesDAWG().load(os.path.join(FIXTURES_DIR, "bytes.dawg"))
 
     def test_contains(self):
         d = self.dawg()

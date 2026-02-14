@@ -1,26 +1,15 @@
-import dawg
-from circuit_dawg import DAWG
 import os
+
 import pytest
+
+from circuit_dawg import DAWG
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestDAWG:
-    @pytest.fixture(autouse=True, scope="function")
-    def setup_class(self):
-        # Build test dawgs using original dawg library
-        dawg.DAWG(["f", "bar", "foo", "foobar"]).save("dawg.dawg")
-        # Let tests run
-        yield
-        # Cleanup
-        if os.path.exists("dawg.dawg"):
-            try:
-                os.remove("dawg.dawg")
-            except OSError:
-                pass
-
-
     def test_load(self):
-        d = DAWG().load("dawg.dawg")
+        d = DAWG().load(os.path.join(FIXTURES_DIR, "dawg.dawg"))
         assert d.dct.fp.skip != 0
 
     def test_bad_replaces(self):

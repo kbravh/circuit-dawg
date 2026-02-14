@@ -1,30 +1,21 @@
-import dawg
-from circuit_dawg.wrapper import Dictionary
-import pytest
 import os
+
+import pytest
+
+from circuit_dawg.wrapper import Dictionary
+
 from .utils import words100k
-from unittest.mock import MagicMock
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestDictionary:
-    path = "int.dawg"
     words = words100k()
 
     @pytest.fixture(autouse=True, scope="function", name="dictionary")
-    def setup_class(self):
-        # Build test dawg using original dawg library
-        values = [len(word) for word in self.words]
-        dawg.IntDAWG(zip(self.words, values)).save(self.path)
-        # load our dictionary
-        dictionary = Dictionary().load(self.path)
-        # Let tests run
+    def setup(self):
+        dictionary = Dictionary().load(os.path.join(FIXTURES_DIR, "int.dawg"))
         yield dictionary
-        # Cleanup
-        if os.path.exists(self.path):
-            try:
-                os.remove(self.path)
-            except OSError:
-                pass
 
     def test_contains(self, dictionary):
         """Test that all words are contained in the dictionary"""

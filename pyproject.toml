@@ -1,24 +1,42 @@
 [project]
 name = "circuit-dawg"
-version = "0.1.0"
-description = "A Pure-Python package for reading DAWG files, optimized for use with CircuitPython and microcontrollers."
+version = "1.1.0"
+description = "A pure-Python package for reading DAWG files, optimized for use with CircuitPython and microcontrollers."
 authors = [
-    {name = "Karey Higuera",email = "karey.higuera@gmail.com"}
+    {name = "Karey Higuera", email = "karey.higuera@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.8"
-dependencies = [
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: Implementation :: MicroPython",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Linguistic",
+]
+keywords = ["CircuitPython", "DAWG", "DAFSA", "word list"]
+
+[project.urls]
+Homepage = "https://github.com/kbravh/circuit-dawg/"
+Repository = "https://github.com/kbravh/circuit-dawg/"
+Issues = "https://github.com/kbravh/circuit-dawg/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "ruff>=0.9",
 ]
 
-[tool.poetry]
-
-[tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
-coverage = "^7.7.0"
-dawg = "^0.8.0"
-pytest = "^8.3.5"
-pytest-cov = "^6.0.0"
+[tool.uv.build-backend]
+module-root = ""
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"

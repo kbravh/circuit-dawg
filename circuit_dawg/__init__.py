@@ -1,8 +1,8 @@
 from .dawgs import (
-    DAWG,
-    CompletionDAWG,
-    BytesDAWG,
-    RecordDAWG,
-    IntDAWG,
-    IntCompletionDAWG,
+    DAWG as DAWG,
+    CompletionDAWG as CompletionDAWG,
+    BytesDAWG as BytesDAWG,
+    RecordDAWG as RecordDAWG,
+    IntDAWG as IntDAWG,
+    IntCompletionDAWG as IntCompletionDAWG,
 )

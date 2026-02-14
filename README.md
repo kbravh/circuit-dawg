@@ -7,10 +7,16 @@ This package is not capable of creating DAWGs. It works with DAWGs built by the 
 
 ## Installation
 
-Clone this repository, or install with pip:
+Install with pip:
 
 ```bash
-pip install circuit_dawg
+pip install circuit-dawg
+```
+
+Or with uv:
+
+```bash
+uv add circuit-dawg
 ```
 
 ## Usage
@@ -19,31 +25,36 @@ The aim of `circuit-dawg` is to be API compatible with [`DAWG`](https://github.c
 
 First, you have to create a dawg using [`DAWG`](https://github.com/kmike/DAWG) module:
 
-    import dawg
-    d = dawg.DAWG(data)
-    d.save('words.dawg')
+```python
+import dawg
+d = dawg.DAWG(data)
+d.save('words.dawg')
+```
 
 And then this dawg can be loaded without requiring C extensions:
 
-    import circuit_dawg
-    d = circuit_dawg.DAWG().load('words.dawg')
+```python
+import circuit_dawg
+d = circuit_dawg.DAWG().load('words.dawg')
+```
+
+All DAWG types support context managers for automatic cleanup:
+
+```python
+with circuit_dawg.CompletionDAWG().load('words.dawg') as d:
+    print(d.keys('hello'))
+# file handle is automatically closed
+```
 
 Please consult [`DAWG`](https://github.com/kmike/DAWG) docs for detailed usage. Some features
 (like constructor parameters or `save()` method) are intentionally
 unsupported.
 
-## Changes from DAWG Python
+## Features
 
-Circuit Python has a subset of the functionality of a full Python distribution. There were some built-in array methods from Python used for loading in the DAWG files that aren't present in Circuit Python, so they needed to be re-written.
+### File-based reading
 
-## Future Goals
-
-### Interact with DAWGs from file without loading into memory
-
-Since Circuit Python is run on microcontrollers, memory is a commodity in very short supply. Loading a large DAWG into memory in order to interact with it is entirely unfeasible. Thus, I plan to make modifications to allow the DAWG to be read directly from the binary file without needing to load it all in.
-
-Contributions are welcome!
-
+Circuit DAWG reads DAWG data directly from files using seek and read operations, without loading the entire file into memory. This makes it suitable for memory-constrained environments like CircuitPython on microcontrollers.
 
 ## Contributing
 
@@ -53,9 +64,19 @@ Submit an [issue or suggestion](https://github.com/kbravh/circuit-dawg/issues)
 Feel free to submit ideas, bugs or pull requests.
 
 ### Local development
-Create a virtual environment and install the requirements in `requirements-dev.txt`.
 
-Tests can be run (with coverage) using `python -m pytest --cov=circuit_dawg tests/`.
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+
+```bash
+# Install dependencies
+uv sync
+
+# Run tests
+uv run pytest --cov=circuit_dawg tests/
+
+# Lint
+uv run ruff check circuit_dawg/
+```
 
 # Authors & Contributors
 

@@ -89,6 +89,17 @@ class DAWG:
             (k.encode("utf8"), (v.encode("utf8"), v)) for k, v in replaces.items()
         )
 
+    def close(self):
+        if self.dct is not None:
+            self.dct.close()
+            self.dct = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
     def prefixes(self, key):
         """
         Returns a list with keys of this DAWG that are prefixes of the ``key``.
@@ -170,8 +181,16 @@ class CompletionDAWG(DAWG):
     def close(self):
         if self.dct is not None:
             self.dct.close()
+            self.dct = None
         if self.guide is not None:
             self.guide.close()
+            self.guide = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
 
 PAYLOAD_SEPARATOR = b"\x01"

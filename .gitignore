@@ -2,7 +2,6 @@ build/
 dist/
 circuit_dawg.egg-info/
 
-^stuff/
 *.pyc
 .tox/
 *.orig
@@ -11,4 +10,5 @@ __pycache__
 
 .vscode/
 .venv/
+.venv-temp/
 .coverage

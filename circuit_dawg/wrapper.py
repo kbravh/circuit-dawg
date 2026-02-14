@@ -27,10 +27,6 @@ class FilePointer:
         if self.fp:
           self.fp.close()
 
-    def __del__(self):
-        if self.fp:
-            self.fp.close()
-
 
 class Dictionary:
     """
@@ -48,17 +44,17 @@ class Dictionary:
         "Checks if a given index is related to the end of a key."
         assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
-        base = struct.unpack("I", self.fp.read(4))[0]
+        base = struct.unpack("=I", self.fp.read(4))[0]
         return units.has_leaf(base)
 
     def value(self, index):
         assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
-        base = struct.unpack("I", self.fp.read(4))[0]
+        base = struct.unpack("=I", self.fp.read(4))[0]
         offset = units.offset(base)
         value_index = (index ^ offset) & units.PRECISION_MASK
         self.fp.seek(value_index * 4)
-        return units.value(struct.unpack("I", self.fp.read(4))[0])
+        return units.value(struct.unpack("=I", self.fp.read(4))[0])
 
     def read(self, fp, path):
         self.fp = FilePointer(fp)
@@ -84,12 +80,12 @@ class Dictionary:
         "Follows a transition"
         assert isinstance(self.fp, FilePointer), "read() must be called before using Dictionary"
         self.fp.seek(index * 4)
-        base = struct.unpack("I", self.fp.read(4))[0]
+        base = struct.unpack("=I", self.fp.read(4))[0]
         offset = units.offset(base)
         next_index = (index ^ offset ^ label) & units.PRECISION_MASK
         self.fp.seek(next_index * 4)
 
-        new_label = units.label(struct.unpack("I", self.fp.read(4))[0])
+        new_label = units.label(struct.unpack("=I", self.fp.read(4))[0])
         if new_label != label:
             return None
 
@@ -118,6 +114,12 @@ class Dictionary:
             self.fp = None
             self.file_path = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
 
 class Guide:
     ROOT = 0
@@ -145,6 +147,12 @@ class Guide:
             self.fp.close()
             self.fp = None
             self.file_path = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
     def size(self):
         assert isinstance(self.fp, FilePointer), "read() must be called before using Guide"

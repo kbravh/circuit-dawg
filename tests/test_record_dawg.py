@@ -1,7 +1,10 @@
-import pytest
-from circuit_dawg import DAWG, RecordDAWG
 import os
-import dawg
+
+import pytest
+
+from circuit_dawg import DAWG, RecordDAWG
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestRecordDAWG:
@@ -11,67 +14,58 @@ class TestRecordDAWG:
         ("foo", (3, 2, 1)),
         ("foobar", (6, 3, 0)),
     )
-    path = "record.dawg"
 
-    @pytest.fixture(autouse=True, scope="function", name="record_dawg")
-    def setup_class(self):
-        # Build test dawg using original dawg library
-        dawg.RecordDAWG(str(">3H"), self.DATA).save(self.path)
-        # load test dawg using our wrapper
-        record_dawg = RecordDAWG(">3H").load(self.path)
-        # Let tests run
-        yield record_dawg
-        # Cleanup
-        if os.path.exists(self.path):
-            try:
-              os.remove(self.path)
-            except PermissionError:
-              pass
+    def dawg(self):
+        return RecordDAWG(">3H").load(os.path.join(FIXTURES_DIR, "record.dawg"))
 
-    def test_getitem(self, record_dawg):
-        assert record_dawg["foo"] == [(3, 2, 1), (3, 2, 256)]
-        assert record_dawg["bar"] == [(3, 1, 0)]
-        assert record_dawg["foobar"] == [(6, 3, 0)]
+    def test_getitem(self):
+        d = self.dawg()
+        assert d["foo"] == [(3, 2, 1), (3, 2, 256)]
+        assert d["bar"] == [(3, 1, 0)]
+        assert d["foobar"] == [(6, 3, 0)]
 
-    def test_getitem_missing(self, record_dawg):
+    def test_getitem_missing(self):
+        d = self.dawg()
 
         with pytest.raises(KeyError):
-            record_dawg["x"]
+            d["x"]
 
         with pytest.raises(KeyError):
-            record_dawg["food"]
+            d["food"]
 
         with pytest.raises(KeyError):
-            record_dawg["foobarz"]
+            d["foobarz"]
 
         with pytest.raises(KeyError):
-            record_dawg["f"]
+            d["f"]
 
-    def test_record_items(self, record_dawg):
-        assert record_dawg.items() == sorted(self.DATA)
+    def test_record_items(self):
+        d = self.dawg()
+        assert d.items() == sorted(self.DATA)
 
-    def test_record_keys(self, record_dawg):
-        assert record_dawg.keys() == [
+    def test_record_keys(self):
+        d = self.dawg()
+        assert d.keys() == [
             "bar",
             "foo",
             "foo",
             "foobar",
         ]
 
-    def test_record_keys_prefix(self, record_dawg):
-        assert record_dawg.keys("fo") == ["foo", "foo", "foobar"]
-        assert record_dawg.keys("bar") == ["bar"]
-        assert record_dawg.keys("barz") == []
+    def test_record_keys_prefix(self):
+        d = self.dawg()
+        assert d.keys("fo") == ["foo", "foo", "foobar"]
+        assert d.keys("bar") == ["bar"]
+        assert d.keys("barz") == []
 
-    def test_prefixes(self, record_dawg):
-        assert record_dawg.prefixes("foobarz") == ["foo", "foobar"]
-        assert record_dawg.prefixes("x") == []
-        assert record_dawg.prefixes("bar") == ["bar"]
+    def test_prefixes(self):
+        d = self.dawg()
+        assert d.prefixes("foobarz") == ["foo", "foobar"]
+        assert d.prefixes("x") == []
+        assert d.prefixes("bar") == ["bar"]
 
 
 class TestPredictionRecordDAWG:
-    path = "prediction-record.dawg"
-
     REPLACES = DAWG.compile_replaces({"Е": "Ё"})
 
     DATA = [
@@ -101,35 +95,25 @@ class TestPredictionRecordDAWG:
     ]
 
     SUITE_ITEMS = [
-        (it[0], [(w, [(len(w),)]) for w in it[1]])  # key  # item, value pair
+        (it[0], [(w, [(len(w),)]) for w in it[1]])
         for it in SUITE
     ]
 
-    SUITE_VALUES = [(it[0], [[(len(w),)] for w in it[1]]) for it in SUITE]  # key
+    SUITE_VALUES = [(it[0], [[(len(w),)] for w in it[1]]) for it in SUITE]
 
-    @pytest.fixture(autouse=True, scope="function", name="record_dawg")
-    def setup_class(self):
-        # Build test dawg using original dawg library
-        dawg.RecordDAWG(str("=H"), [(k, (len(k),)) for k in self.DATA]).save(self.path)
-        # load test dawg using our wrapper
-        record_dawg = RecordDAWG(str("=H")).load(self.path)
-        # Let tests run
-        yield record_dawg
-        # Cleanup
-        if os.path.exists(self.path):
-            try:
-              os.remove(self.path)
-            except PermissionError:
-              pass
+    def dawg(self):
+        return RecordDAWG(str("=H")).load(
+            os.path.join(FIXTURES_DIR, "prediction-record.dawg")
+        )
 
     @pytest.mark.parametrize(("word", "prediction"), SUITE)
-    def test_record_dawg_prediction(self, word, prediction, record_dawg):
-        assert record_dawg.similar_keys(word, self.REPLACES) == prediction
+    def test_record_dawg_prediction(self, word, prediction):
+        assert self.dawg().similar_keys(word, self.REPLACES) == prediction
 
     @pytest.mark.parametrize(("word", "prediction"), SUITE_ITEMS)
-    def test_record_dawg_items(self, word, prediction, record_dawg):
-        assert record_dawg.similar_items(word, self.REPLACES) == prediction
+    def test_record_dawg_items(self, word, prediction):
+        assert self.dawg().similar_items(word, self.REPLACES) == prediction
 
     @pytest.mark.parametrize(("word", "prediction"), SUITE_VALUES)
-    def test_record_dawg_items_values(self, word, prediction, record_dawg):
-        assert record_dawg.similar_item_values(word, self.REPLACES) == prediction
+    def test_record_dawg_items_values(self, word, prediction):
+        assert self.dawg().similar_item_values(word, self.REPLACES) == prediction
