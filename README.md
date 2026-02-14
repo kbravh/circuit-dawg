@@ -7,16 +7,34 @@ This package is not capable of creating DAWGs. It works with DAWGs built by the 
 
 ## Installation
 
-Install with pip:
+Download the latest release from [GitHub Releases](https://github.com/kbravh/circuit-dawg/releases).
 
-```bash
-pip install circuit-dawg
+Each release includes three zip files:
+
+- `circuit-dawg-X.Y.Z-py.zip` — raw `.py` source files (works on any CircuitPython board)
+- `circuit-dawg-X.Y.Z-9.x-mpy.zip` — compiled `.mpy` files for CircuitPython 9.x
+- `circuit-dawg-X.Y.Z-10.x-mpy.zip` — compiled `.mpy` files for CircuitPython 10.x
+
+Using `.mpy` files is recommended as they use less memory and load faster. Choose the zip that matches your CircuitPython version.
+
+### CircuitPython install steps
+
+1. Download the appropriate zip for your board
+2. Extract the zip — it contains a `circuit_dawg/` directory
+3. Copy the `circuit_dawg/` directory to the `lib/` folder on your CIRCUITPY drive
+
+Your drive should look like this:
+
 ```
-
-Or with uv:
-
-```bash
-uv add circuit-dawg
+CIRCUITPY/
+├── lib/
+│   └── circuit_dawg/
+│       ├── __init__.py  (or .mpy)
+│       ├── dawgs.py
+│       ├── units.py
+│       └── wrapper.py
+├── code.py
+└── words.dawg
 ```
 
 ## Usage
@@ -55,6 +73,37 @@ unsupported.
 ### File-based reading
 
 Circuit DAWG reads DAWG data directly from files using seek and read operations, without loading the entire file into memory. This makes it suitable for memory-constrained environments like CircuitPython on microcontrollers.
+
+## Memory Usage
+
+Circuit DAWG is designed for memory-constrained microcontrollers. The library reads directly from files using seek/read operations, so **DAWG file size does not determine RAM usage** — even large DAWG files use minimal memory.
+
+The numbers below were measured on CPython using `tracemalloc`. MicroPython typically uses less memory than CPython for equivalent operations.
+
+### Library overhead
+
+| Operation | Peak memory |
+|-----------|------------|
+| Load a DAWG | ~6 KB |
+| Load a CompletionDAWG | ~6 KB |
+| Load a BytesDAWG | ~6 KB |
+
+### Per-operation costs
+
+| Operation | Memory |
+|-----------|--------|
+| `__contains__` / lookup | < 1 KB |
+| `get()` | < 1 KB |
+| `keys()` / `iterkeys()` | < 1 KB (scales with result count) |
+
+### Board compatibility
+
+| Board class | Available RAM | Suitability |
+|-------------|--------------|-------------|
+| SAMD21 (e.g. Trinket M0) | ~32 KB | Basic lookups only, small DAWGs |
+| SAMD51 (e.g. Feather M4) | ~192 KB | Comfortable for most operations |
+| RP2040 (e.g. Pico) | ~160 KB after boot | Comfortable for most operations |
+| ESP32-S2/S3 | 2 MB+ PSRAM | Large DAWGs, bulk completions |
 
 ## Contributing
 

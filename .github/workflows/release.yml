@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - cp-version: "9.2.9"
+            mpy-label: "9.x"
+            build-py-zip: true
+          - cp-version: "10.0.3"
+            mpy-label: "10.x"
+            build-py-zip: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Clone CircuitPython and build mpy-cross
+        run: |
+          git clone --depth 1 --branch "${{ matrix.cp-version }}" \
+            https://github.com/adafruit/circuitpython.git /tmp/circuitpython
+          make -C /tmp/circuitpython/mpy-cross
+
+      - name: Compile .mpy files
+        run: |
+          mkdir -p staging/circuit_dawg
+          for py_file in circuit_dawg/*.py; do
+            filename=$(basename "$py_file")
+            if [ "$filename" = "__init__.py" ]; then
+              /tmp/circuitpython/mpy-cross/build/mpy-cross "$py_file" \
+                -o "staging/circuit_dawg/__init__.mpy"
+            else
+              /tmp/circuitpython/mpy-cross/build/mpy-cross "$py_file" \
+                -o "staging/circuit_dawg/${filename%.py}.mpy"
+            fi
+          done
+
+      - name: Create mpy zip
+        run: |
+          cd staging
+          zip -r "../circuit-dawg-${{ steps.version.outputs.version }}-${{ matrix.mpy-label }}-mpy.zip" \
+            circuit_dawg/
+
+      - name: Upload mpy zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: circuit-dawg-${{ steps.version.outputs.version }}-${{ matrix.mpy-label }}-mpy
+          path: "circuit-dawg-${{ steps.version.outputs.version }}-${{ matrix.mpy-label }}-mpy.zip"
+
+      - name: Create py zip
+        if: matrix.build-py-zip
+        run: |
+          zip -r "circuit-dawg-${{ steps.version.outputs.version }}-py.zip" \
+            circuit_dawg/
+
+      - name: Upload py zip
+        if: matrix.build-py-zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: circuit-dawg-${{ steps.version.outputs.version }}-py
+          path: "circuit-dawg-${{ steps.version.outputs.version }}-py.zip"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
