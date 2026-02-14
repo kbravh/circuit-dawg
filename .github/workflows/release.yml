@@ -30,6 +30,7 @@ jobs:
         run: |
           git clone --depth 1 --branch "${{ matrix.cp-version }}" \
             https://github.com/adafruit/circuitpython.git /tmp/circuitpython
+          git -C /tmp/circuitpython submodule update --init --depth 1 tools/huffman
           make -C /tmp/circuitpython/mpy-cross
 
       - name: Compile .mpy files
