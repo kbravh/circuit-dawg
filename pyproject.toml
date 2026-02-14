@@ -1,16 +1,16 @@
 [project]
 name = "circuit-dawg"
-version = "1.1.0"
+version = "1.0.0"
 description = "A pure-Python package for reading DAWG files, optimized for use with CircuitPython and microcontrollers."
 authors = [
     {name = "Karey Higuera", email = "karey.higuera@gmail.com"}
 ]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = []
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
